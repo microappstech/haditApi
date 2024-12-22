@@ -45,11 +45,11 @@ namespace haditApi
                 }) }).ToList();
                 var jsonString = System.Text.Json.JsonSerializer.Serialize(res);
 
-                return new ApiResponse<List<Category>>(true, Data: res);
+                return new ApiResponse<List<Category>>(true, Data: res.OrderByDescending(i=>i.Hadits?.Count()).ToList());
             }
             catch (Exception ex)
             {
-                return new ApiResponse<List<Category>>(false, ex.Message);
+                return new ApiResponse<List<Category>>(false, $"{ex.Message} --- {ex.InnerException}");
             }
         }
         public ApiResponse<List<Category>> SearchByName(string name)

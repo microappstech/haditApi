@@ -3,6 +3,7 @@ using haditApi.Data;
 using haditApi.Models;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 using System;
@@ -17,6 +18,15 @@ builder.Services.AddDbContext<dbContext>(option =>
     option.EnableDetailedErrors();
     
 });
+builder.Services.AddCors(op =>
+{
+    op.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
+    });
+});
 builder.Services.AddScoped<HaditService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,15 +34,14 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 Action initializeAction = () => { SeedData.Initialize(app.Services); };
 initializeAction.Invoke();
-if (app.Environment.IsDevelopment())
+app.UseCors();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hadit API v1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hadit API v1");
+    c.RoutePrefix = string.Empty;
+});
+
 app.MapGet("/hadits", new Func<HaditService, object>(haditService =>
 {
     Func<object> getResult = () =>
@@ -58,6 +67,12 @@ app.MapGet("/categories-hadites", (HaditService haditService) =>
         return resultFunc.Invoke();
     };
     return fetchCategories.Invoke();
+});
+app.MapGet("/Hadites-by-category/{ctg}", (HaditService haditService, string ctg) =>
+{
+    _ = int.TryParse(ctg, out int CategryId);
+    var result = haditService.GetHaditsByCategory(CategryId);
+    return result;
 });
 
 app.MapGet("/search", (HaditService haditService, string s) =>
