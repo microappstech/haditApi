@@ -16,7 +16,7 @@ namespace haditApi.Models
         public string OnPublisher { get; set; } = null!;
         
         public int CategoryId { get; set; }
-        public Category? Category { get; set; }
+        [JsonIgnore] public Category? Category { get; set; }
         [JsonIgnore]public bool Confirmed { get; set; }
     }
 }

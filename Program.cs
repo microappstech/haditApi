@@ -1,12 +1,15 @@
 using haditApi;
 using haditApi.Data;
 using haditApi.Models;
+using haditApi.Services;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 using System;
+
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +31,7 @@ builder.Services.AddCors(op =>
     });
 });
 builder.Services.AddScoped<HaditService>();
+builder.Services.AddScoped<Security>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -41,7 +45,6 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hadit API v1");
     c.RoutePrefix = string.Empty;
 });
-
 app.MapGet("/hadits", new Func<HaditService, object>(haditService =>
 {
     Func<object> getResult = () =>
@@ -84,14 +87,15 @@ app.MapGet("/search", (HaditService haditService, string s) =>
     };
     return searchFunc.Invoke((haditService, s));
 });
-app.MapPost("/hadits", (HaditService haditService, List<Hadit> hadits) =>
+app.MapPost("/hadits", (HaditService haditService, ApiPost<List<Hadit>> data) =>
 {
-    var res = haditService.PostHadites(hadits);
+    var res = haditService.PostHadites(data);
     return Results.Ok(res);
 });
-app.MapPost("/hadit", (HaditService haditService, Hadit hadit) =>
+app.MapPost("/hadit", (HaditService haditService, ApiPost<Hadit> data) =>
 {
-    var res = haditService.PostHadites(new List<Hadit> { hadit });
+    var post = new ApiPost<List<Hadit>>() { Data = new List<Hadit> { data.Data }, Key = data.Key };
+    var res = haditService.PostHadites(post);
     return Results.Ok(res);
 });
 

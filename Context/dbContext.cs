@@ -38,6 +38,7 @@ namespace haditApi
         }
         public DbSet<Hadit> Hadites { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Key> Keys { get; set; }
         
     }
 }
