@@ -23,15 +23,15 @@ builder.Services.AddDbContext<dbContext>(option =>
 });
 builder.Services.AddCors(op =>
 {
-    op.AddDefaultPolicy(policy =>
+    op.AddPolicy("AngularApp", policy =>
     {
-        policy.AllowAnyHeader()
+        policy.WithOrigins("http://localhost:4200")
         .AllowAnyMethod()
-        .AllowAnyOrigin();
+        .AllowAnyHeader();
     });
 });
 builder.Services.AddScoped<HaditService>();
-builder.Services.AddScoped<Security>();
+builder.Services.AddScoped< Security>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
