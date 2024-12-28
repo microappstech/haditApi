@@ -214,7 +214,7 @@ namespace haditApi
             try
             {
 
-                if (!security.CheckKey(data.Key))
+                if (security.CheckKey(data.Key))
                     data.Data.ForEach(item =>
                     {
                         item.Confirmed = true;

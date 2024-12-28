@@ -3,6 +3,7 @@ using haditApi.Data;
 using haditApi.Models;
 using haditApi.Services;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +22,11 @@ builder.Services.AddDbContext<dbContext>(option =>
     option.EnableDetailedErrors();
     
 });
-builder.Services.AddCors(op =>
+builder.Services.AddCors(options =>
 {
-    op.AddPolicy("AngularApp", policy =>
+    options.AddDefaultPolicy(policy => 
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader();
     });
@@ -45,22 +46,11 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hadit API v1");
     c.RoutePrefix = string.Empty;
 });
-app.MapGet("/hadits", new Func<HaditService, object>(haditService =>
-{
-    Func<object> getResult = () =>
-    {
-        return haditService.GetHadits();
-    };
-    return getResult.Invoke();
-}));
+
 app.MapGet("/categories", (HaditService haditService) =>
 {
-    Func<object> fetchCategories = () =>
-    {
-        Func<object> resultFunc = () => haditService.GetCategories();
-        return resultFunc.Invoke();
-    };
-    return fetchCategories.Invoke();
+    var result = haditService.GetCategories();
+    return result;
 });
 app.MapGet("/categories-hadites", (HaditService haditService) =>
 {
@@ -78,6 +68,12 @@ app.MapGet("/Hadites-by-category/{ctg}", (HaditService haditService, string ctg)
     return result;
 });
 
+app.MapGet("/Category-by-id/{id}", (HaditService haditService, string id) =>
+{
+    _ = int.TryParse(id, out int CategryId);
+    var result = haditService.GetCategory(CategryId);
+    return result;
+});
 app.MapGet("/search", (HaditService haditService, string s) =>
 {
     Func<(HaditService, string), object> searchFunc = tuple =>
@@ -86,6 +82,11 @@ app.MapGet("/search", (HaditService haditService, string s) =>
         return service.SearchByContent(query);
     };
     return searchFunc.Invoke((haditService, s));
+});
+app.MapGet("/hadits", (HaditService haditService) =>
+{
+    var res = haditService.GetHadits();
+    return res;
 });
 app.MapPost("/hadits", (HaditService haditService, ApiPost<List<Hadit>> data) =>
 {
@@ -99,10 +100,5 @@ app.MapPost("/hadit", (HaditService haditService, ApiPost<Hadit> data) =>
     return Results.Ok(res);
 });
 
-
-app.MapGet("/", () =>
-{
-    return "hello";
-});
 
 app.Run();
